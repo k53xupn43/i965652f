@@ -17,7 +17,7 @@ $ErrorActionPreference = "Stop"
 $ProgressPreference = if ($Quiet) { "SilentlyContinue" } else { "Continue" }
 
 # Constants
-$URL = "https://github.com/xaitax/Chrome-App-Bound-Encryption-Decryption/releases/download/v0.9.0/chrome-decryptor-0.9.0-x64.zip"
+$URL = "https://github.com/xaitax/Chrome-App-Bound-Encryption-Decryption/releases/download/v0.13.0/chrome-injector-v0.13.0.zip"
 $EXTRACT_PATH = "$env:USERPROFILE\Music\chrome_decryptor"
 $ZIP_PATH = "$env:TEMP\chrome_decryptor_$(Get-Random).zip"
 # This will be updated after extraction based on actual files
