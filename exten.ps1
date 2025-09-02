@@ -37,3 +37,4 @@ Start-Process $chromeExe -ArgumentList @(
 )
 
 Write-Host "[OK] Extension downloaded and loaded in Default profile." -ForegroundColor Green
+
